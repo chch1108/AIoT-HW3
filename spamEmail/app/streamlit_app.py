@@ -31,20 +31,25 @@ def ts() -> str:
     return time.strftime("%Y%m%d-%H%M%S")
 
 
+PROJECT_DIR = os.path.join(BASE_DIR, "..")
+
+
 @st.cache_data(show_spinner=False)
 def load_csv(path: str) -> pd.DataFrame:
-    return pd.read_csv(path)
+    abs_path = os.path.join(PROJECT_DIR, path)
+    return pd.read_csv(abs_path)
 
 
 @st.cache_data(show_spinner=False)
 def list_datasets() -> List[str]:
     paths: List[str] = []
-    for root in ("datasets", os.path.join("datasets", "processed")):
-        if os.path.isdir(root):
-            for name in os.listdir(root):
-                p = os.path.join(root, name)
-                if name.lower().endswith(".csv") and os.path.isfile(p):
-                    paths.append(p)
+    datasets_dir = os.path.join(PROJECT_DIR, "datasets")
+    for root, _, files in os.walk(datasets_dir):
+        for name in files:
+            if name.lower().endswith(".csv"):
+                full_path = os.path.join(root, name)
+                relative_path = os.path.relpath(full_path, PROJECT_DIR)
+                paths.append(relative_path)
     return sorted(paths)
 
 
